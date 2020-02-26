@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Post } from './post.model';
 import { map, catchError } from 'rxjs/operators';
 import { Subject, throwError } from 'rxjs';
@@ -25,20 +25,26 @@ export class PostsService {
   }
 
   fetchPosts() {
-    return this.http.get<{ [key: string]: Post }>(this.firebaseUrl).pipe(
-      map(responseData => {
-        const postsArray: Post[] = [];
-        for (const key in responseData) {
-          if (responseData.hasOwnProperty(key)) {
-            postsArray.push({ ...responseData[key], id: key });
-          }
-        }
-        return postsArray;
-      }),
-      catchError(errorRes => {
-        return throwError(errorRes);
+    return this.http
+      .get<{ [key: string]: Post }>(this.firebaseUrl, {
+        headers: new HttpHeaders({
+          'Custom-Header': 'Hello'
+        })
       })
-    );
+      .pipe(
+        map(responseData => {
+          const postsArray: Post[] = [];
+          for (const key in responseData) {
+            if (responseData.hasOwnProperty(key)) {
+              postsArray.push({ ...responseData[key], id: key });
+            }
+          }
+          return postsArray;
+        }),
+        catchError(errorRes => {
+          return throwError(errorRes);
+        })
+      );
   }
 
   deletePosts() {
