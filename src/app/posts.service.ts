@@ -58,13 +58,15 @@ export class PostsService {
   }
 
   deletePosts() {
-    return this.http.delete(this.firebaseUrl, { observe: 'events' }).pipe(
-      tap(event => {
-        console.log(event);
-        if (event.type === HttpEventType.Response) {
-          console.log(event.body);
-        }
-      })
-    ); // this returns an observable
+    return this.http
+      .delete(this.firebaseUrl, { observe: 'events', responseType: 'text' })
+      .pipe(
+        tap(event => {
+          console.log(event);
+          if (event.type === HttpEventType.Response) {
+            console.log(event.body);
+          }
+        })
+      ); // this returns an observable
   }
 }
