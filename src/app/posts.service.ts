@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpParams,
+  HttpEventType
+} from '@angular/common/http';
 import { Post } from './post.model';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Subject, throwError } from 'rxjs';
 
 @Injectable({
@@ -14,14 +19,18 @@ export class PostsService {
 
   createAndStorePost(title: string, content: string) {
     const postData: Post = { title, content };
-    this.http.post<{ name: string }>(this.firebaseUrl, postData).subscribe(
-      responseData => {
-        console.log(responseData);
-      },
-      error => {
-        this.error.next(error.message);
-      }
-    );
+    this.http
+      .post<{ name: string }>(this.firebaseUrl, postData, {
+        observe: 'response'
+      })
+      .subscribe(
+        responseData => {
+          console.log(responseData);
+        },
+        error => {
+          this.error.next(error.message);
+        }
+      );
   }
 
   fetchPosts() {
@@ -49,6 +58,13 @@ export class PostsService {
   }
 
   deletePosts() {
-    return this.http.delete(this.firebaseUrl); // this returns an observable
+    return this.http.delete(this.firebaseUrl, { observe: 'events' }).pipe(
+      tap(event => {
+        console.log(event);
+        if (event.type === HttpEventType.Response) {
+          console.log(event.body);
+        }
+      })
+    ); // this returns an observable
   }
 }
